@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Operations Dashboard | AquaSave</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="depth" aria-hidden="true"><i class="d1" style="opacity:.75"></i><i class="d2" style="opacity:.7"></i></div>
+<div id="bubbles" aria-hidden="true"></div>
+
+<div class="page-shell">
+  <nav class="dash-nav">
+    <a class="brand" href="index.html"><img src="images/graphics/logo/ASAVE.png" alt="AquaSave"></a>
+    <span style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+      <a class="navl" href="index.html">Mission</a>
+      <a class="navl" href="index.html#map">Live Map</a>
+      <span class="user-chip" id="userChip"><span class="avatar" id="userAvatar">?</span><span id="userNameNav">Responder</span></span>
+      <a class="btn ghost sm" href="login.html">Log in</a>
+    </span>
+  </nav>
+
+  <main class="dash-wrap">
+    <div class="dash-head">
+      <div>
+        <span class="live"><i></i> Archipelago Command · <span id="userRoleBadge">Role</span> · <span id="userSiteBadge">Hotspot</span></span>
+        <h1 id="welcomeHeading">Welcome back</h1>
+        <p style="margin:0;color:var(--mist)">Real-time debris recovery, reef restoration, and marine rescue telemetry across 9 Philippine hotspots.</p>
+      </div>
+      <div class="dash-actions">
+        <select id="dashRegionFilter" aria-label="Filter dashboard by region" style="padding:.62rem .95rem;border-radius:999px;border:1px solid var(--line);background:rgba(10,54,73,.85);color:var(--ice);font:700 .86rem 'Inter',sans-serif">
+          <option value="All">All Regions (9 Sites)</option>
+          <option value="Luzon">Luzon (3 Sites)</option>
+          <option value="Visayas">Visayas (3 Sites)</option>
+          <option value="Palawan">Palawan (1 Site)</option>
+          <option value="Mindanao">Mindanao (2 Sites)</option>
+        </select>
+        <button type="button" class="btn sm" id="openLogModalBtn" style="border:0;cursor:pointer">+ Log Cleanup Haul</button>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-top"><span>Plastic Removed (2026)</span></div>
+        <b id="kpiTons">0.0 t</b>
+        <span class="delta" id="kpiTonsDelta">From 2026 site totals</span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span>Active Field Crews</span></div>
+        <b id="kpiCrews">0</b>
+        <span class="delta" id="kpiCrewsDelta">Across 0 coastal zones</span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span>Species Rescued</span></div>
+        <b id="kpiSpecies">0</b>
+        <span class="delta" id="kpiSpeciesDelta">Turtles, dugongs &amp; rays</span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span>Active / Monitoring</span></div>
+        <b id="kpiStatus">0 / 0</b>
+        <span class="delta warn" id="kpiStatusDelta">0 sites under watch</span>
+      </div>
+    </div>
+
+    <div class="dash-tabs" role="tablist">
+      <button type="button" class="dtab active" data-tab="overview">Overview &amp; Analytics</button>
+      <button type="button" class="dtab" data-tab="sites">9 Cleanup Sites</button>
+      <button type="button" class="dtab" data-tab="crews">Crews &amp; Shifts</button>
+      <button type="button" class="dtab" data-tab="logs">Field Logs (<span id="logCountTab">0</span>)</button>
+    </div>
+
+    <div class="tab-pane active" id="pane-overview">
+      <div class="dash-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>2026 Tonnage by Hotspot</h2>
+              <span class="badge-pill">Metric Tons Recovered</span>
+            </div>
+            <div class="bar-list" id="siteBars"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Archipelago Growth (2021–2026)</h2>
+              <span class="badge-pill lime">6-Year Cumulative Trend</span>
+            </div>
+            <div class="bar-list" id="yearBars"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Recent Field Activity</h2>
+              <button type="button" class="tbtn" id="quickLogBtn">+ Add Entry</button>
+            </div>
+            <div class="log-feed" id="recentLogsFeed"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Focus Breakdown</h2>
+              <span class="badge-pill">2026 Allocation</span>
+            </div>
+            <div class="bar-list" id="focusBars"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="pane-sites">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Philippine Hotspot Directory</h2>
+          <span class="badge-pill">Live Telemetry</span>
+        </div>
+        <div class="table-wrap">
+          <table class="dtable-full">
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Location</th>
+                <th>Region</th>
+                <th>Primary Focus</th>
+                <th>2026 Tons</th>
+                <th>Crews</th>
+                <th>Rescues</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="sitesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="pane-crews">
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Active Regional Crews</h2>
+            <span class="badge-pill lime" id="joinedCountBadge">0 Joined</span>
+          </div>
+          <div id="crewsList"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Your Responder Profile</h2>
+            <span class="badge-pill" id="profileRolePill">Not set</span>
+          </div>
+          <form id="profileForm" style="display:grid;gap:10px;font-size:.92rem">
+            <div class="fgroup" style="margin:0">
+              <label for="profName">Name</label>
+              <input id="profName" type="text" placeholder="Your name">
+            </div>
+            <div class="fgroup" style="margin:0">
+              <label for="profEmail">Email</label>
+              <input id="profEmail" type="email" placeholder="you@example.com">
+            </div>
+            <div class="fgroup" style="margin:0">
+              <label for="profRole">Role</label>
+              <select id="profRole">
+                <option value="">Select role</option>
+                <option value="Volunteer">Volunteer</option>
+                <option value="Crew Lead">Crew Lead</option>
+                <option value="Marine Responder">Marine Responder</option>
+              </select>
+            </div>
+            <div class="fgroup" style="margin:0">
+              <label for="profRegion">Region</label>
+              <select id="profRegion">
+                <option value="">Select region</option>
+                <option value="Luzon">Luzon</option>
+                <option value="Visayas">Visayas</option>
+                <option value="Palawan">Palawan</option>
+                <option value="Mindanao">Mindanao</option>
+              </select>
+            </div>
+            <div class="fgroup" style="margin:0">
+              <label for="profSite">Hotspot</label>
+              <select id="profSite">
+                <option value="">Select hotspot</option>
+                <option value="Manila Bay">Manila Bay</option>
+                <option value="Verde Island Passage">Verde Island Passage</option>
+                <option value="Albay Gulf">Albay Gulf</option>
+                <option value="Puerto Princesa">Puerto Princesa</option>
+                <option value="Iloilo Strait">Iloilo Strait</option>
+                <option value="Cebu Strait">Cebu Strait</option>
+                <option value="Leyte Gulf">Leyte Gulf</option>
+                <option value="Zamboanga Coast">Zamboanga Coast</option>
+                <option value="Davao Gulf">Davao Gulf</option>
+              </select>
+            </div>
+            <button type="submit" class="btn sm" style="border:0;cursor:pointer;justify-self:start">Save Profile</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="pane-logs">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Cleanup &amp; Rescue Ledger</h2>
+          <span style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn sm" id="tabAddLogBtn" style="border:0;cursor:pointer">+ New Field Log</button>
+            <button type="button" class="btn ghost sm" id="clearLogsBtn" style="cursor:pointer">Clear Logs</button>
+          </span>
+        </div>
+        <div class="table-wrap">
+          <table class="dtable-full">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Site</th>
+                <th>Activity</th>
+                <th>Plastic (t)</th>
+                <th>Rescues</th>
+                <th>Crew / Lead</th>
+                <th>Notes</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="logsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>&copy; 2026 AquaSave. <a href="index.html" style="color:var(--foam);margin-left:12px">Back to home</a></footer>
+</div>
+
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
+  <div class="mdlg" style="max-width:540px;padding:1.6rem">
+    <button class="mclose" id="closeLogModal" type="button" aria-label="Close">×</button>
+    <span class="eyebrow" style="margin-bottom:.3rem">Field Report</span>
+    <h3 id="logModalTitle" style="font-size:1.6rem;margin-bottom:.3rem">Log Cleanup or Rescue Haul</h3>
+    <p style="font-size:.88rem;color:var(--mist);margin-bottom:1.2rem">Submitted entries update regional KPIs and the ledger immediately.</p>
+
+    <form id="newLogForm">
+      <div class="frow">
+        <div class="fgroup">
+          <label for="logSite">Cleanup Hotspot</label>
+          <select id="logSite">
+            <option value="Manila Bay|Luzon">Manila Bay (Luzon)</option>
+            <option value="Verde Island Passage|Luzon">Verde Island Passage (Luzon)</option>
+            <option value="Albay Gulf|Luzon">Albay Gulf (Luzon)</option>
+            <option value="Puerto Princesa|Palawan">Puerto Princesa (Palawan)</option>
+            <option value="Iloilo Strait|Visayas">Iloilo Strait (Visayas)</option>
+            <option value="Cebu Strait|Visayas">Cebu Strait (Visayas)</option>
+            <option value="Leyte Gulf|Visayas">Leyte Gulf (Visayas)</option>
+            <option value="Zamboanga Coast|Mindanao">Zamboanga Coast (Mindanao)</option>
+            <option value="Davao Gulf|Mindanao">Davao Gulf (Mindanao)</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <label for="logType">Operation Focus</label>
+          <select id="logType">
+            <option value="Plastic removal">Plastic removal</option>
+            <option value="Reef restoration">Reef restoration</option>
+            <option value="Wildlife rescue">Wildlife rescue</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="frow">
+        <div class="fgroup">
+          <label for="logTons">Plastic Removed (metric tons)</label>
+          <input id="logTons" type="number" step="0.1" min="0" value="0" required>
+        </div>
+        <div class="fgroup">
+          <label for="logSpecies">Marine Animals Aided</label>
+          <input id="logSpecies" type="number" step="1" min="0" value="0" required>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <label for="logCrew">Crew Name</label>
+        <input id="logCrew" type="text" placeholder="Crew name" required>
+      </div>
+
+      <div class="fgroup">
+        <label for="logNotes">Field Notes</label>
+        <textarea id="logNotes" rows="2" placeholder="Describe debris type, tide conditions, or species rescued..." required></textarea>
+      </div>
+
+      <button type="submit" class="btn full">Publish to Ledger</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  var SITES = [
+    {n:'Manila Bay',loc:'Metro Manila, Luzon',g:'Luzon',f:'Plastic removal',s:'Active',t:[120,190,330,455,540,612],c:18,sp:9},
+    {n:'Verde Island Passage',loc:'Batangas, Luzon',g:'Luzon',f:'Reef restoration',s:'Active',t:[60,90,130,180,215,248],c:8,sp:4},
+    {n:'Albay Gulf',loc:'Albay, Luzon',g:'Luzon',f:'Wildlife rescue',s:'Monitoring',t:[25,40,62,85,105,121],c:4,sp:12},
+    {n:'Puerto Princesa',loc:'Palawan',g:'Palawan',f:'Wildlife rescue',s:'Active',t:[35,55,85,115,142,164],c:5,sp:14},
+    {n:'Iloilo Strait',loc:'Iloilo, Panay',g:'Visayas',f:'Plastic removal',s:'Active',t:[40,62,95,140,175,205],c:8,sp:3},
+    {n:'Cebu Strait',loc:'Cebu, Visayas',g:'Visayas',f:'Plastic removal',s:'Active',t:[30,48,80,112,140,158],c:6,sp:5},
+    {n:'Leyte Gulf',loc:'Leyte, Visayas',g:'Visayas',f:'Reef restoration',s:'Active',t:[30,48,72,100,122,142],c:3,sp:3},
+    {n:'Zamboanga Coast',loc:'Zamboanga, Mindanao',g:'Mindanao',f:'Wildlife rescue',s:'Monitoring',t:[22,35,52,72,90,103],c:3,sp:8},
+    {n:'Davao Gulf',loc:'Davao, Mindanao',g:'Mindanao',f:'Plastic removal',s:'Active',t:[42,65,98,135,165,189],c:7,sp:4}
+  ];
+
+  var CREWS = [
+    {name:'Baywatch North', site:'Manila Bay', region:'Luzon', members:44, nextShift:'Sat, 06:30 AM · Breakwater Sector 4'},
+    {name:'Batangas Reef Divers', site:'Verde Island Passage', region:'Luzon', members:26, nextShift:'Sun, 07:00 AM · Maricaban Coral Nursery'},
+    {name:'Mayon Coast Patrol', site:'Albay Gulf', region:'Luzon', members:19, nextShift:'Wed, 06:00 AM · Whale Shark Corridor'},
+    {name:'Honda Bay Responders', site:'Puerto Princesa', region:'Palawan', members:31, nextShift:'Sat, 07:00 AM · Turtle Nesting Cove'},
+    {name:'Mactan Channel Crew', site:'Cebu Strait', region:'Visayas', members:38, nextShift:'Sat, 06:00 AM · Cordova Mangrove Edge'},
+    {name:'Guimaras Strait Team', site:'Iloilo Strait', region:'Visayas', members:29, nextShift:'Sun, 06:30 AM · Ortiz Wharf Shoreline'},
+    {name:'San Pedro Reef Unit', site:'Leyte Gulf', region:'Visayas', members:17, nextShift:'Thu, 07:30 AM · Tacloban Seagrass Bed'},
+    {name:'Samal Current Team', site:'Davao Gulf', region:'Mindanao', members:34, nextShift:'Sat, 06:15 AM · Davao River Mouth'},
+    {name:'Santa Cruz Watch', site:'Zamboanga Coast', region:'Mindanao', members:16, nextShift:'Sun, 06:30 AM · Pink Sand Lagoon'}
+  ];
+
+  var DEFAULT_PROFILE = {name:'', email:'', role:'', region:'', site:''};
+  var DEFAULT_LOGS = [
+    {id:'LOG-101',date:'2026-11-12',site:'Cebu Strait',region:'Visayas',type:'Plastic removal',tons:2.1,species:1,crew:'Mactan Channel Crew',author:'Field Team',notes:'Mangrove-edge sweep completed.'},
+    {id:'LOG-102',date:'2026-11-10',site:'Manila Bay',region:'Luzon',type:'Plastic removal',tons:4.8,species:0,crew:'Baywatch North',author:'Field Team',notes:'Breakwater debris collection.'},
+    {id:'LOG-103',date:'2026-11-08',site:'Verde Island Passage',region:'Luzon',type:'Reef restoration',tons:0.6,species:2,crew:'Batangas Reef Divers',author:'Field Team',notes:'Coral nursery maintenance and cleanup.'},
+    {id:'LOG-104',date:'2026-11-05',site:'Puerto Princesa',region:'Palawan',type:'Wildlife rescue',tons:0.4,species:3,crew:'Honda Bay Responders',author:'Field Team',notes:'Assisted turtles near nesting cove.'},
+    {id:'LOG-105',date:'2026-11-02',site:'Davao Gulf',region:'Mindanao',type:'Plastic removal',tons:1.9,species:0,crew:'Samal Current Team',author:'Field Team',notes:'River mouth shoreline sweep.'}
+  ];
+
+  function load(key, fallback){
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e){ return fallback; }
+  }
+  function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+  function getProfile(){ return Object.assign({}, DEFAULT_PROFILE, load('aquasave_profile', DEFAULT_PROFILE)); }
+  function setProfile(p){ save('aquasave_profile', Object.assign({}, DEFAULT_PROFILE, p)); }
+  function getLogs(){
+    var v = localStorage.getItem('aquasave_logs');
+    if (!v) { save('aquasave_logs', DEFAULT_LOGS); return DEFAULT_LOGS.slice(); }
+    try { return JSON.parse(v); } catch(e){ return []; }
+  }
+  function setLogs(logs){ save('aquasave_logs', logs); }
+  function getJoined(){ return load('aquasave_joined_crews', []); }
+  function setJoined(list){ save('aquasave_joined_crews', list); }
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function applyProfile(){
+    var p = getProfile();
+    var name = (p.name||'').trim();
+    var initial = name ? name.charAt(0).toUpperCase() : '?';
+    document.getElementById('userAvatar').textContent = initial;
+    document.getElementById('userNameNav').textContent = name || 'Responder';
+    document.getElementById('userRoleBadge').textContent = p.role || 'Role';
+    document.getElementById('userSiteBadge').textContent = p.site || 'Hotspot';
+    document.getElementById('welcomeHeading').textContent = 'Welcome back';
+    document.getElementById('profileRolePill').textContent = p.role || 'Not set';
+    document.getElementById('profName').value = p.name || '';
+    document.getElementById('profEmail').value = p.email || '';
+    document.getElementById('profRole').value = p.role || '';
+    document.getElementById('profRegion').value = p.region || '';
+    document.getElementById('profSite').value = p.site || '';
+  }
+
+  document.getElementById('profileForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    setProfile({
+      name: document.getElementById('profName').value.trim(),
+      email: document.getElementById('profEmail').value.trim(),
+      role: document.getElementById('profRole').value,
+      region: document.getElementById('profRegion').value,
+      site: document.getElementById('profSite').value
+    });
+    applyProfile();
+  });
+
+  document.querySelectorAll('.dtab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.dtab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  var modal = document.getElementById('modal');
+  function openModal(){ modal.classList.add('open'); }
+  function closeModal(){ modal.classList.remove('open'); }
+  document.getElementById('openLogModalBtn').addEventListener('click', openModal);
+  document.getElementById('quickLogBtn').addEventListener('click', openModal);
+  document.getElementById('tabAddLogBtn').addEventListener('click', openModal);
+  document.getElementById('closeLogModal').addEventListener('click', closeModal);
+  modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+
+  var regionFilter = document.getElementById('dashRegionFilter');
+
+  function renderDashboard(){
+    var reg = regionFilter.value;
+    var logs = getLogs();
+    var filteredSites = SITES.filter(function(s){ return reg === 'All' || s.g === reg; });
+    var filteredLogs = logs.filter(function(l){ return reg === 'All' || l.region === reg; });
+
+    var extraTonsBySite = {}, extraSpBySite = {};
+    logs.forEach(function(l){
+      extraTonsBySite[l.site] = (extraTonsBySite[l.site] || 0) + parseFloat(l.tons || 0);
+      extraSpBySite[l.site] = (extraSpBySite[l.site] || 0) + parseInt(l.species || 0, 10);
+    });
+
+    var totalTons = 0, totalCrews = 0, totalSpecies = 0, activeCount = 0, monCount = 0;
+    filteredSites.forEach(function(s){
+      totalTons += s.t[5] + (extraTonsBySite[s.n] || 0);
+      totalCrews += s.c;
+      totalSpecies += s.sp + (extraSpBySite[s.n] || 0);
+      if (s.s === 'Active') activeCount++; else monCount++;
+    });
+
+    document.getElementById('kpiTons').textContent = totalTons.toLocaleString(undefined, {minimumFractionDigits:1, maximumFractionDigits:1}) + ' t';
+    document.getElementById('kpiCrews').textContent = totalCrews;
+    document.getElementById('kpiCrewsDelta').textContent = 'Across ' + filteredSites.length + (filteredSites.length === 1 ? ' coastal zone' : ' coastal zones');
+    document.getElementById('kpiSpecies').textContent = totalSpecies;
+    document.getElementById('kpiStatus').textContent = activeCount + ' / ' + monCount;
+    document.getElementById('kpiStatusDelta').textContent = monCount + (monCount === 1 ? ' site under watch' : ' sites under watch');
+    document.getElementById('logCountTab').textContent = filteredLogs.length;
+
+    var maxSiteT = Math.max.apply(null, filteredSites.map(function(s){ return s.t[5] + (extraTonsBySite[s.n] || 0); }).concat([1]));
+    document.getElementById('siteBars').innerHTML = filteredSites.slice().sort(function(a,b){
+      return (b.t[5] + (extraTonsBySite[b.n]||0)) - (a.t[5] + (extraTonsBySite[a.n]||0));
+    }).map(function(s){
+      var val = s.t[5] + (extraTonsBySite[s.n] || 0);
+      var pct = Math.round((val / maxSiteT) * 100);
+      return '<div><div class="brow-top"><span>' + esc(s.n) + ' <small style="color:var(--mist);font-weight:600">(' + esc(s.g) + ')</small></span><small>' + val.toFixed(1) + ' t</small></div><div class="btrack"><div class="bfill' + (s.s !== 'Active' ? ' ember' : '') + '" style="width:' + pct + '%"></div></div></div>';
+    }).join('');
+
+    var years = [2021, 2022, 2023, 2024, 2025, 2026];
+    var yrTotals = years.map(function(_, idx){
+      var sum = filteredSites.reduce(function(acc, s){ return acc + s.t[idx]; }, 0);
+      if (idx === 5) sum += filteredSites.reduce(function(acc, s){ return acc + (extraTonsBySite[s.n] || 0); }, 0);
+      return sum;
+    });
+    var maxYr = Math.max.apply(null, yrTotals.concat([1]));
+    document.getElementById('yearBars').innerHTML = years.map(function(yr, idx){
+      var val = yrTotals[idx];
+      var pct = Math.round((val / maxYr) * 100);
+      return '<div><div class="brow-top"><span>' + yr + '</span><small>' + val.toFixed(1) + ' t</small></div><div class="btrack"><div class="bfill" style="width:' + pct + '%"></div></div></div>';
+    }).join('');
+
+    var focuses = ['Plastic removal', 'Reef restoration', 'Wildlife rescue'];
+    document.getElementById('focusBars').innerHTML = focuses.map(function(f){
+      var fSites = filteredSites.filter(function(s){ return s.f === f; });
+      var fTons = fSites.reduce(function(acc, s){ return acc + s.t[5] + (extraTonsBySite[s.n] || 0); }, 0);
+      var pct = totalTons > 0 ? Math.round((fTons / totalTons) * 100) : 0;
+      return '<div><div class="brow-top"><span>' + f + ' (' + fSites.length + ' sites)</span><small>' + pct + '% · ' + fTons.toFixed(1) + ' t</small></div><div class="btrack"><div class="bfill" style="width:' + pct + '%"></div></div></div>';
+    }).join('');
+
+    document.getElementById('recentLogsFeed').innerHTML = filteredLogs.slice(0, 6).map(function(l){
+      var cls = l.type === 'Wildlife rescue' ? 'ember' : (l.type === 'Reef restoration' ? 'lime' : '');
+      return '<div class="log-item"><div class="log-item-head"><b>' + esc(l.site) + '</b><span class="badge-pill ' + cls + '">' + esc(l.type) + '</span></div><div style="font-size:.78rem;color:var(--foam);font-weight:700">' + esc(l.date) + ' · +' + parseFloat(l.tons).toFixed(1) + ' t · ' + parseInt(l.species||0,10) + ' rescued · ' + esc(l.crew) + '</div><p>' + esc(l.notes) + '</p></div>';
+    }).join('') || '<p style="color:var(--mist)">No logs recorded for this region yet.</p>';
+
+    document.getElementById('sitesTableBody').innerHTML = filteredSites.map(function(s){
+      var tVal = s.t[5] + (extraTonsBySite[s.n] || 0);
+      var spVal = s.sp + (extraSpBySite[s.n] || 0);
+      return '<tr><td><strong>' + esc(s.n) + '</strong></td><td>' + esc(s.loc) + '</td><td>' + esc(s.g) + '</td><td>' + esc(s.f) + '</td><td><strong>' + tVal.toFixed(1) + ' t</strong></td><td>' + s.c + '</td><td>' + spVal + '</td><td><span class="st' + (s.s === 'Active' ? ' act' : '') + '">' + esc(s.s) + '</span></td></tr>';
+    }).join('');
+
+    var joined = getJoined();
+    document.getElementById('joinedCountBadge').textContent = joined.length + ' Joined';
+    var filteredCrews = CREWS.filter(function(c){ return reg === 'All' || c.region === reg; });
+    document.getElementById('crewsList').innerHTML = filteredCrews.map(function(c){
+      var isJoined = joined.indexOf(c.name) >= 0;
+      return '<div class="crew-card"><div><h4>' + esc(c.name) + ' <span style="font-size:.78rem;color:var(--foam);font-family:Inter,sans-serif">· ' + c.members + ' members</span></h4><small>' + esc(c.site) + ' (' + esc(c.region) + ') · Next: ' + esc(c.nextShift) + '</small></div><button type="button" class="tbtn' + (isJoined ? ' joined' : '') + '" data-crew="' + esc(c.name) + '">' + (isJoined ? '✓ Joined' : '+ Join Crew') + '</button></div>';
+    }).join('');
+
+    document.querySelectorAll('[data-crew]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var list = getJoined();
+        var i = list.indexOf(btn.dataset.crew);
+        if (i >= 0) list.splice(i,1); else list.push(btn.dataset.crew);
+        setJoined(list);
+        renderDashboard();
+      });
+    });
+
+    document.getElementById('logsTableBody').innerHTML = filteredLogs.map(function(l){
+      return '<tr><td><strong>' + esc(l.id) + '</strong></td><td>' + esc(l.date) + '</td><td>' + esc(l.site) + '</td><td>' + esc(l.type) + '</td><td><strong>' + parseFloat(l.tons).toFixed(1) + ' t</strong></td><td>' + parseInt(l.species||0,10) + '</td><td>' + esc(l.crew) + ' <small style="color:var(--mist)">(' + esc(l.author||'') + ')</small></td><td>' + esc(l.notes) + '</td><td><button type="button" class="tbtn" data-del-log="' + esc(l.id) + '">Delete</button></td></tr>';
+    }).join('') || '<tr><td colspan="9" style="color:var(--mist)">No logs yet.</td></tr>';
+
+    document.querySelectorAll('[data-del-log]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.dataset.delLog;
+        setLogs(getLogs().filter(function(l){ return l.id !== id; }));
+        renderDashboard();
+      });
+    });
+  }
+
+  regionFilter.addEventListener('change', renderDashboard);
+
+  document.getElementById('clearLogsBtn').addEventListener('click', function(){
+    if (confirm('Clear all field logs?')) { setLogs([]); renderDashboard(); }
+  });
+
+  document.getElementById('newLogForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var siteParts = document.getElementById('logSite').value.split('|');
+    var p = getProfile();
+    var entry = {
+      id: 'LOG-' + Date.now().toString().slice(-6),
+      date: new Date().toISOString().slice(0, 10),
+      site: siteParts[0],
+      region: siteParts[1],
+      type: document.getElementById('logType').value,
+      tons: parseFloat(document.getElementById('logTons').value) || 0,
+      species: parseInt(document.getElementById('logSpecies').value, 10) || 0,
+      crew: document.getElementById('logCrew').value.trim() || 'Coastal Volunteers',
+      author: p.name || 'Responder',
+      notes: document.getElementById('logNotes').value.trim()
+    };
+    var logs = getLogs();
+    logs.unshift(entry);
+    setLogs(logs);
+    closeModal();
+    document.getElementById('newLogForm').reset();
+    renderDashboard();
+  });
+
+  applyProfile();
+  renderDashboard();
+})();
+</script>
+</body>
+</html>

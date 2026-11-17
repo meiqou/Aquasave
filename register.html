@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Become a Guardian | AquaSave</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="depth" aria-hidden="true"><i class="d1" style="opacity:.65"></i><i class="d2" style="opacity:.55"></i></div>
+<div id="bubbles" aria-hidden="true"></div>
+
+<div class="page-shell">
+  <nav class="dash-nav">
+    <a class="brand" href="index.html"><img src="images/graphics/logo/ASAVE.png" alt="AquaSave"></a>
+    <a class="btn ghost sm" href="login.html">Log in</a>
+  </nav>
+
+  <main class="auth-main">
+      <div class="auth-card field-login">
+        <h1>Create account</h1>
+
+        <form id="registerForm" novalidate>
+          <div class="fgroup">
+            <label for="regName">Full name</label>
+            <input id="regName" name="name" type="text" autocomplete="name" required>
+          </div>
+
+          <div class="fgroup">
+            <label for="regEmail">Email</label>
+            <input id="regEmail" name="email" type="email" autocomplete="email" required>
+          </div>
+
+          <div class="fgroup">
+            <label for="regPassword">Password</label>
+            <div class="pw-wrap">
+              <input id="regPassword" name="password" type="password" placeholder="8+ characters" autocomplete="new-password" required>
+              <button type="button" class="pw-toggle" id="togglePw">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-pill-blue">Create account</button>
+        </form>
+
+        <p class="bottom-switch">Have an account? <a href="login.html">Log in</a></p>
+      </div>
+  </main>
+
+  <footer>&copy; 2026 AquaSave</footer>
+</div>
+
+<script>
+(function(){
+  var pwInput = document.getElementById('regPassword');
+  var toggleBtn = document.getElementById('togglePw');
+  toggleBtn.addEventListener('click', function(){
+    var isPw = pwInput.type === 'password';
+    pwInput.type = isPw ? 'text' : 'password';
+    toggleBtn.textContent = isPw ? 'Hide' : 'Show';
+  });
+  document.getElementById('registerForm').addEventListener('submit', function(e){
+    e.preventDefault();
+  });
+})();
+</script>
+</body>
+</html>
