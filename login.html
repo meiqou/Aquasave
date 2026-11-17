@@ -13,13 +13,16 @@
 
 <div class="page-shell">
   <nav class="dash-nav">
-    <a class="brand" href="index.html"><img src="images/graphics/logo/ASAVE.png" alt="AquaSave"><span>AquaSave</span></a>
-    <a class="btn ghost sm" href="register.html">Create account</a>
+    <a class="brand" href="index.html"><img src="images/graphics/logo/ASAVE.png" alt="AquaSave"></a>
+    <span class="nav-right">
+      <a class="btn ghost sm" href="register.html">Create account</a>
+    </span>
   </nav>
 
   <main class="auth-main">
       <div class="auth-card field-login">
-        <h1>Log in</h1>
+        <h1>Welcome back</h1>
+        <p>Sign in to your account</p>
 
         <form id="loginForm" novalidate>
           <div class="fgroup">
@@ -37,6 +40,7 @@
 
           <button type="submit" class="btn-pill-blue">Log in</button>
         </form>
+        <p id="authMsg" class="auth-msg" aria-live="polite"></p>
 
         <p class="bottom-switch">No account? <a href="register.html">Create account</a></p>
       </div>
@@ -49,13 +53,32 @@
 (function(){
   var pwInput = document.getElementById('loginPassword');
   var toggleBtn = document.getElementById('togglePw');
+  var form = document.getElementById('loginForm');
+  var msg = document.getElementById('authMsg');
+  function setMsg(text, type){ msg.textContent = text || ''; msg.className = 'auth-msg' + (type ? ' ' + type : ''); }
+  function getAccounts(){ try { return JSON.parse(localStorage.getItem('aquasave_accounts') || '[]'); } catch(e){ return []; } }
   toggleBtn.addEventListener('click', function(){
     var isPw = pwInput.type === 'password';
     pwInput.type = isPw ? 'text' : 'password';
     toggleBtn.textContent = isPw ? 'Hide' : 'Show';
   });
-  document.getElementById('loginForm').addEventListener('submit', function(e){
+  form.addEventListener('submit', function(e){
     e.preventDefault();
+    var email = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
+    var password = pwInput.value || '';
+    if(!email || !password){ setMsg('Please enter your email and password.', 'error'); return; }
+    var accounts = getAccounts();
+    var user = null;
+    for(var i=0;i<accounts.length;i++){ if(accounts[i].email === email && accounts[i].password === password){ user = accounts[i]; break; } }
+    if(!user){ setMsg('Invalid email or password.', 'error'); return; }
+    localStorage.setItem('aquasave_session', JSON.stringify({ email: user.email, name: user.name, loggedIn: true }));
+    var profile = {};
+    try { profile = JSON.parse(localStorage.getItem('aquasave_profile') || '{}') || {}; } catch(err){ profile = {}; }
+    profile.name = user.name;
+    profile.email = user.email;
+    localStorage.setItem('aquasave_profile', JSON.stringify(profile));
+    setMsg('Logged in. Redirecting...', 'success');
+    setTimeout(function(){ window.location.href = 'index.html'; }, 500);
   });
 })();
 </script>

@@ -14,7 +14,9 @@
 <div class="page-shell">
   <nav class="dash-nav">
     <a class="brand" href="index.html"><img src="images/graphics/logo/ASAVE.png" alt="AquaSave"></a>
-    <a class="btn ghost sm" href="login.html">Log in</a>
+    <span class="nav-right">
+      <a class="btn ghost sm" href="login.html">Log in</a>
+    </span>
   </nav>
 
   <main class="auth-main">
@@ -42,6 +44,7 @@
 
           <button type="submit" class="btn-pill-blue">Create account</button>
         </form>
+        <p id="authMsg" class="auth-msg" aria-live="polite"></p>
 
         <p class="bottom-switch">Have an account? <a href="login.html">Log in</a></p>
       </div>
@@ -54,13 +57,34 @@
 (function(){
   var pwInput = document.getElementById('regPassword');
   var toggleBtn = document.getElementById('togglePw');
+  var form = document.getElementById('registerForm');
+  var msg = document.getElementById('authMsg');
+  function setMsg(text, type){ msg.textContent = text || ''; msg.className = 'auth-msg' + (type ? ' ' + type : ''); }
+  function getAccounts(){ try { return JSON.parse(localStorage.getItem('aquasave_accounts') || '[]'); } catch(e){ return []; } }
+  function saveAccounts(a){ localStorage.setItem('aquasave_accounts', JSON.stringify(a)); }
   toggleBtn.addEventListener('click', function(){
     var isPw = pwInput.type === 'password';
     pwInput.type = isPw ? 'text' : 'password';
     toggleBtn.textContent = isPw ? 'Hide' : 'Show';
   });
-  document.getElementById('registerForm').addEventListener('submit', function(e){
+  form.addEventListener('submit', function(e){
     e.preventDefault();
+    var name = (document.getElementById('regName').value || '').trim();
+    var email = (document.getElementById('regEmail').value || '').trim().toLowerCase();
+    var password = pwInput.value || '';
+    if(!name || !email || !password){ setMsg('Please fill out all fields.', 'error'); return; }
+    if(password.length < 8){ setMsg('Password must be at least 8 characters.', 'error'); return; }
+    var accounts = getAccounts();
+    for(var i=0;i<accounts.length;i++){ if(accounts[i].email === email){ setMsg('An account with this email already exists.', 'error'); return; } }
+    accounts.push({ name: name, email: email, password: password });
+    saveAccounts(accounts);
+    localStorage.setItem('aquasave_session', JSON.stringify({ email: email, name: name, loggedIn: true }));
+    var profile = {};
+    try { profile = JSON.parse(localStorage.getItem('aquasave_profile') || '{}') || {}; } catch(err){ profile = {}; }
+    profile.name = name; profile.email = email;
+    localStorage.setItem('aquasave_profile', JSON.stringify(profile));
+    setMsg('Account created. Redirecting...', 'success');
+    setTimeout(function(){ window.location.href = 'dashboard.html'; }, 600);
   });
 })();
 </script>
